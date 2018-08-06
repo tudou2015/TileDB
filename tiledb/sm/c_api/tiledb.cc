@@ -30,8 +30,8 @@
  *
  * This file defines the C API of TileDB.
  */
-
 #include "tiledb/sm/c_api/tiledb.h"
+#include "tiledb/rest/capnp/array.h"
 #include "tiledb/sm/array_schema/array_schema.h"
 #include "tiledb/sm/cpp_api/core_interface.h"
 #include "tiledb/sm/kv/kv.h"
@@ -1593,6 +1593,181 @@ int tiledb_array_schema_get_attribute_from_name(
   }
   return TILEDB_OK;
 }
+
+int tiledb_array_schema_serialize(
+    tiledb_ctx_t* ctx,
+    const tiledb_array_schema_t* array_schema,
+    tiledb_serialization_type_t serialize_type,
+    char** serialized_string,
+    int64_t* serialized_string_length) {
+  // Sanity check
+  if (sanity_check(ctx) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  // Sanity check
+  if (sanity_check(ctx, array_schema) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  auto st = tiledb::rest::array_schema_serialize(
+      array_schema->array_schema_,
+      (tiledb::sm::SerializationType)serialize_type,
+      serialized_string,
+      serialized_string_length);
+  if (!st.ok()) {
+    LOG_STATUS(st);
+    save_error(ctx, st);
+    return TILEDB_ERR;
+  }
+  return TILEDB_OK;
+}
+
+int tiledb_array_schema_deserialize(
+    tiledb_ctx_t* ctx,
+    tiledb_array_schema_t** array_schema,
+    tiledb_serialization_type_t serialize_type,
+    const char* serialized_string,
+    const int64_t serialized_string_length) {
+  // Sanity check
+  if (sanity_check(ctx) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  // Create array schema struct
+  *array_schema = new (std::nothrow) tiledb_array_schema_t;
+  if (*array_schema == nullptr) {
+    auto st = tiledb::sm::Status::Error(
+        "Failed to allocate TileDB array schema object");
+    LOG_STATUS(st);
+    save_error(ctx, st);
+    return TILEDB_OOM;
+  }
+  auto st = tiledb::rest::array_schema_deserialize(
+      &((*array_schema)->array_schema_),
+      (tiledb::sm::SerializationType)serialize_type,
+      serialized_string,
+      serialized_string_length);
+  if (!st.ok()) {
+    LOG_STATUS(st);
+    save_error(ctx, st);
+    return TILEDB_ERR;
+  }
+  return TILEDB_OK;
+}
+/*int tiledb_array_schema_serialize(
+    tiledb_ctx_t* ctx,
+    const tiledb_array_schema_t* array_schema,
+    tiledb_serialization_type_t serialize_type,
+    char** serialized_string,
+    int64_t *serialized_string_length) {
+  // Sanity check
+  if (sanity_check(ctx) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  // Sanity check
+  if (sanity_check(ctx, array_schema) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  std::unique_ptr<capnp::MallocMessageBuilder> message =
+      tiledb::rest::array_schema_to_capnp(array_schema->array_schema_);
+
+  switch (serialize_type) {
+    case TILEDB_JSON: {
+      capnp::JsonCodec json;
+      //kj::String capnp_json = json.encode(message);
+      kj::String capnp_json = json.encode(message->getRoot<::ArraySchema>());
+      *serialized_string = capnp_json.begin();
+      break;
+    }
+    case TILEDB_CAPNP: {
+      // kj::ArrayPtr<const char> encodedMessage =
+      // message->getSegmentsForOutput().asBytes().asChars();
+      auto protomessage = messageToFlatArray(*message);
+      *serialized_string = protomessage.asChars().begin();
+      *serialized_string_length = protomessage.asChars().size();
+      //      const_cast<const char*>(*serialized_string) =
+      //          message->getSegmentsForOutput().asBytes().asChars().begin();
+      break;
+    }
+    default: {
+      auto st = tiledb::sm::Status::Error("Unknown serialization type passed");
+      LOG_STATUS(st);
+      save_error(ctx, st);
+      return TILEDB_ERR;
+    }
+  }
+  return TILEDB_OK;
+}
+
+int tiledb_array_schema_deserialize(
+    tiledb_ctx_t* ctx,
+    tiledb_array_schema_t** array_schema,
+    tiledb_serialization_type_t serialize_type,
+    const char* serialized_string,
+    const int64_t serialized_string_length) {
+  // Sanity check
+  if (sanity_check(ctx) == TILEDB_ERR)
+    return TILEDB_ERR;
+
+  std::unique_ptr<tiledb::sm::ArraySchema> decoded_array_schema = nullptr;
+
+  switch (serialize_type) {
+    case TILEDB_JSON: {
+      capnp::JsonCodec json;
+      capnp::MallocMessageBuilder message_builder;
+      ::ArraySchema::Builder array_schema_builder =
+          message_builder.initRoot<::ArraySchema>();
+      json.decode(kj::StringPtr(serialized_string), array_schema_builder);
+      ::ArraySchema::Reader array_schema_reader =
+          array_schema_builder.asReader();
+      decoded_array_schema =
+          tiledb::rest::array_schema_from_capnp(&array_schema_reader);
+      break;
+    }
+    case TILEDB_CAPNP: {
+      const kj::byte* mBytes = reinterpret_cast<const
+kj::byte*>(serialized_string); capnp::FlatArrayMessageReader
+reader(kj::arrayPtr(reinterpret_cast<const capnp::word*>(mBytes),
+serialized_string_length / sizeof(capnp::word)));
+      //capnp::FlatArrayMessageReader reader(kj::arrayPtr<const
+kj::byte>(reinterpret_cast<const kj::byte*>(serialized_string),
+serialized_string_length));
+
+      ArraySchema::Reader array_schema_reader = reader.getRoot<::ArraySchema>();
+      decoded_array_schema =
+          tiledb::rest::array_schema_from_capnp(&array_schema_reader);
+
+      break;
+    }
+    default: {
+      auto st = tiledb::sm::Status::Error("Unknown serialization type passed");
+      LOG_STATUS(st);
+      save_error(ctx, st);
+      return TILEDB_ERR;
+    }
+  }
+
+  if (decoded_array_schema == nullptr) {
+    auto st = tiledb::sm::Status::Error(
+        "Failed to allocate TileDB array schema object");
+    LOG_STATUS(st);
+    save_error(ctx, st);
+
+    return TILEDB_ERR;
+  }
+
+  // Create array schema struct
+  *array_schema = new (std::nothrow) tiledb_array_schema_t;
+  if (*array_schema == nullptr) {
+    auto st = tiledb::sm::Status::Error(
+        "Failed to allocate TileDB array schema object");
+    LOG_STATUS(st);
+    save_error(ctx, st);
+    return TILEDB_OOM;
+  }
+  (*array_schema)->array_schema_ = decoded_array_schema.get();
+  decoded_array_schema.release();
+
+  return TILEDB_OK;
+}*/
 
 /* ****************************** */
 /*              QUERY             */
