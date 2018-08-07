@@ -822,7 +822,7 @@ const ::capnp::_::RawSchema s_91ffad4460acd176 = {
   1, 3, i_91ffad4460acd176, nullptr, nullptr, { &s_91ffad4460acd176, nullptr, nullptr, 0, 0, nullptr }
 };
 #endif  // !CAPNP_LITE
-static const ::capnp::_::AlignedData<228> b_8dad27d4e9db0a95 = {
+static const ::capnp::_::AlignedData<227> b_8dad27d4e9db0a95 = {
   {   0,   0,   0,   0,   5,   0,   6,   0,
     149,  10, 219, 233, 212,  39, 173, 141,
      61,   0,   0,   0,   1,   0,   1,   0,
@@ -918,10 +918,10 @@ static const ::capnp::_::AlignedData<228> b_8dad27d4e9db0a95 = {
      10,   0, 245, 255,   1,   0,   0,   0,
       0,   0,   1,   0,  11,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
-    237,   1,   0,   0,  74,   0,   0,   0,
+    237,   1,   0,   0,  42,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
-    236,   1,   0,   0,   3,   0,   1,   0,
-    248,   1,   0,   0,   2,   0,   1,   0,
+    232,   1,   0,   0,   3,   0,   1,   0,
+    244,   1,   0,   0,   2,   0,   1,   0,
     105, 110, 116,  56,   0,   0,   0,   0,
      14,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -1042,8 +1042,7 @@ static const ::capnp::_::AlignedData<228> b_8dad27d4e9db0a95 = {
      14,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
-    108, 105, 115, 116,  84, 101, 120, 116,
-      0,   0,   0,   0,   0,   0,   0,   0,
+    116, 101, 120, 116,   0,   0,   0,   0,
      12,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -1060,7 +1059,7 @@ static const ::capnp::_::RawSchema* const d_8dad27d4e9db0a95[] = {
 static const uint16_t m_8dad27d4e9db0a95[] = {8, 9, 2, 4, 6, 0, 10, 3, 5, 7, 1};
 static const uint16_t i_8dad27d4e9db0a95[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 const ::capnp::_::RawSchema s_8dad27d4e9db0a95 = {
-  0x8dad27d4e9db0a95, b_8dad27d4e9db0a95.words, 228, d_8dad27d4e9db0a95, m_8dad27d4e9db0a95,
+  0x8dad27d4e9db0a95, b_8dad27d4e9db0a95.words, 227, d_8dad27d4e9db0a95, m_8dad27d4e9db0a95,
   1, 11, i_8dad27d4e9db0a95, nullptr, nullptr, { &s_8dad27d4e9db0a95, nullptr, nullptr, 0, 0, nullptr }
 };
 #endif  // !CAPNP_LITE
